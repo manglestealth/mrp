@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -13,7 +14,7 @@ type Config struct {
 	LogWay		string
 }
 
-func LoadConf(path string) *Config {
+func LoadConf(path string){
 	viper.SetConfigType("toml")
 	viper.AddConfigPath("../../conf")
 	viper.AddConfigPath("../conf")
@@ -23,12 +24,19 @@ func LoadConf(path string) *Config {
 	if err != nil{
 		log.Fatal("read config failed %v\n", err)
 	}
-	return &Config{
-		BindAddr: viper.GetString("common.bind_addr"),
-		BindPort: viper.GetInt64("common.bind_port"),
-		LogFile:  viper.GetString("common.log_file"),
-		LogLevel: viper.GetString("common.log_level"),
-		LogWay:   viper.GetString("common.log_way"),
-	}
+	commonConfig := &Config{}
+	for k,j := range viper.AllSettings(){
+		fmt.Println(k,j)
+		if k == "common"{
+			commonConfig.BindAddr = j["bind_addr"]
+			commonConfig.BindPort= viper.GetInt64("common.bind_port")
+			commonConfig.LogFile= viper.GetString("common.log_file")
+			commonConfig.LogLevel= viper.GetString("common.log_level")
+			commonConfig.LogWay=   viper.GetString("common.log_way")
 
+
+		}else{
+				fmt.Println(2)
+		}
+	}
 }
