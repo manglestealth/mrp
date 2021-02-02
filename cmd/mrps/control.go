@@ -2,26 +2,24 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/manglestealth/mrp/pkg/conn"
 	"github.com/manglestealth/mrp/pkg/models"
 	"log"
 )
 
-var ProxyServers map[string]*models.ProxyServer = make(map[string]*models.ProxyServer)
-
-func ProcessControlConn(l *conn.Listener){
-	for{
+func ProcessControlConn(l *conn.Listener) {
+	for {
 		c := l.GetConn()
 		log.Printf("Get one new conn %v\n", c)
 		go controlWorker(c)
 	}
 }
 
-
-func controlWorker(c *conn.Conn){
+func controlWorker(c *conn.Conn) {
 	//读取客户端发送给服务器的第一条信息，失败则关闭连接
 	res, err := c.ReadLine()
-	if err != nil{
+	if err != nil {
 		log.Fatalf("Read error %v\n", err)
 	}
 	log.Printf("get %s", res)
@@ -34,13 +32,57 @@ func controlWorker(c *conn.Conn){
 	}
 
 	succ, msg, needRes := checkProxy(clientCtlReq, c)
-	if !succ{
+	if !succ {
 		clientCtlRes.Code = 1
 		clientCtlRes.Msg = msg
 	}
 }
 
-func checkProxy(req *models.ClientCtlReq, c *conn.Conn)(bool, string, bool){
+func checkProxy(req *models.ClientCtlReq, c *conn.Conn) (succ bool, msg string, needRes bool) {
 	succ := false
 	needRes := true
+
+	server, ok := ProxyServers[req.ProxyName]
+	if !ok {
+		msg = fmt.Sprintf("ProxyName [%s] is not exist", req.ProxyName)
+		log.Fatal(msg)
+		return
+	}
+
+	if req.Passwd != server.Passwd {
+		msg = fmt.Sprintf("ProxyName [%s], password is not correct", req.ProxyName)
+		log.Fatal(msg)
+		return
+	}
+
+	if req.Type == models.ControlConn {
+		if server.Status != models.Idle {
+			msg = fmt.Sprintf("ProxyName [%s], already in use", req.ProxyName)
+			log.Fatal(msg)
+			return
+		}
+
+		err := server.Start()
+		if err != nil {
+			msg = fmt.Sprintf("ProxyName [%s], start proxy error: %v", req.ProxyName, err.Error())
+			log.Fatal(msg)
+			return
+		}
+	} else if req.Type == models.WorkConn {
+		needRes = false
+		if server.Status != models.Working {
+			msg = fmt.Sprintf("ProxyName [%s], is not working when it gets one new work conn", req.ProxyName)
+			log.Print(msg)
+			return
+		}
+
+		server.CliConnChan <- c
+	} else {
+		msg = fmt.Sprintf("ProxyName [%s], type unsupport", req.ProxyName)
+		log.Print(msg)
+		return
+	}
+
+	succ = true
+	return
 }
