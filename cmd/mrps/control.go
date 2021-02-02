@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+var ProxyServers map[string]*models.ProxyServer = make(map[string]*models.ProxyServer)
+
 func ProcessControlConn(l *conn.Listener){
 	for{
 		c := l.GetConn()

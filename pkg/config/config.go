@@ -24,19 +24,23 @@ func LoadConf(path string){
 	if err != nil{
 		log.Fatal("read config failed %v\n", err)
 	}
+
 	commonConfig := &Config{}
 	for k,j := range viper.AllSettings(){
-		fmt.Println(k,j)
+		//fmt.Println(k,j)
+		m := j.(map[string] interface{})
 		if k == "common"{
-			commonConfig.BindAddr = j["bind_addr"]
-			commonConfig.BindPort= viper.GetInt64("common.bind_port")
-			commonConfig.LogFile= viper.GetString("common.log_file")
-			commonConfig.LogLevel= viper.GetString("common.log_level")
-			commonConfig.LogWay=   viper.GetString("common.log_way")
-
+			commonConfig.BindAddr = m["bind_addr"].(string)
+			commonConfig.BindPort= m["bind_port"].(int64)
+			commonConfig.LogFile= m["log_file"].(string)
+			commonConfig.LogLevel= m["log_level"].(string)
+			commonConfig.LogWay= m["log_way"].(string)
+			fmt.Println(commonConfig)
 
 		}else{
-				fmt.Println(2)
+				fmt.Println(j)
 		}
+
+
 	}
 }
