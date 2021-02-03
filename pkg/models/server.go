@@ -107,7 +107,7 @@ func (p *ProxyServer) Close(){
 	p.Unlock()
 }
 
-func(p *ProxyServer)WaitUserConn(res int64){
+func(p *ProxyServer)WaitUserConn() (res int64){
 	res = <-p.CtlMsgChan
 	return
 }

@@ -36,11 +36,43 @@ func controlWorker(c *conn.Conn) {
 		clientCtlRes.Code = 1
 		clientCtlRes.Msg = msg
 	}
+
+	if needRes{
+		buf, _ := json.Marshal(clientCtlRes)
+		err = c.Write(string(buf) + "\n")
+		if err != nil{
+			log.Fatalf("write error, %v", err)
+		}
+	}else{
+		return
+	}
+
+	defer c.Close()
+
+	server, ok := ProxyServers[clientCtlReq.ProxyName]
+	if !ok{
+		log.Fatalf("ProxyName [%s] is not exist", clientCtlReq.ProxyName)
+	}
+	serverCtlReq := &models.ClientCtlReq{}
+	serverCtlReq.Type = models.WorkConn
+
+	for {
+		server.WaitUserConn()
+		buf, _ := json.Marshal(serverCtlReq)
+		err = c.Write(string(buf) + "\n")
+		if err != nil{
+			log.Fatalf("ProxyName [%s], write to client error, proxy exit", server.Name)
+			server.Close()
+			return
+		}
+	}
+
+	return
 }
 
 func checkProxy(req *models.ClientCtlReq, c *conn.Conn) (succ bool, msg string, needRes bool) {
-	succ := false
-	needRes := true
+	succ = false
+	needRes = true
 
 	server, ok := ProxyServers[req.ProxyName]
 	if !ok {
