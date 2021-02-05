@@ -9,9 +9,10 @@ import (
 	"sync"
 )
 
+//tcp连接的包装
 type Listener struct {
-	Addr net.Addr
-	Conns chan *Conn
+	Addr net.Addr //服务器的地址
+	Conns chan *Conn //等待连接产生conn的通道
 }
 
 //等待获取一个连接
@@ -20,6 +21,7 @@ func(l *Listener)GetConn()(conn *Conn){
 	return
 }
 
+//客户端连接的包装
 type Conn struct {
 	TcpConn *net.TCPConn
 	Reader *bufio.Reader

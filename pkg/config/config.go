@@ -14,9 +14,10 @@ type Config struct {
 	LogWay   string
 }
 
-var ProxyServers map[string]*models.ProxyServer = make(map[string]*models.ProxyServer)
 
-func LoadConf(path string) (*Config, map[string]*models.ProxyServer) {
+
+func LoadServerConf(path string) (*Config, map[string]*models.ProxyServer) {
+	 ProxyServers := make(map[string]*models.ProxyServer)
 	viper.SetConfigType("toml")
 	viper.AddConfigPath("../../conf")
 	viper.AddConfigPath("../conf")
@@ -52,4 +53,42 @@ func LoadConf(path string) (*Config, map[string]*models.ProxyServer) {
 		}
 	}
 	return commonConfig, ProxyServers
+}
+
+func LoadClientConf(path string) (*Config, map[string]*models.ProxyClient){
+	ProxyClients := make(map[string]*models.ProxyClient)
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("../../conf")
+	viper.AddConfigPath("../conf")
+	viper.AddConfigPath(".")
+	viper.SetConfigName(path)
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal("read config failed %v\n", err)
+	}
+
+	commonConfig := &Config{}
+	for k, j := range viper.AllSettings() {
+		//fmt.Println(k,j)
+		m := j.(map[string]interface{})
+		if k == "common" {
+
+			commonConfig.BindAddr = m["server_addr"].(string)
+			commonConfig.BindPort = m["bind_port"].(int64)
+			commonConfig.LogFile = m["log_file"].(string)
+			commonConfig.LogLevel = m["log_level"].(string)
+			commonConfig.LogWay = m["log_way"].(string)
+			//fmt.Println(commonConfig)
+		} else {
+			for name, section := range m {
+				sectionMap := section.(map[string]interface{})
+				proxyClient := &models.ProxyClient{}
+				proxyClient.Name = name
+				proxyClient.Passwd = sectionMap["passwd"].(string)
+				proxyClient.LocalPort = sectionMap["local_port"].(int64)
+				ProxyClients[name] = proxyClient
+			}
+		}
+	}
+	return commonConfig, ProxyClients
 }
