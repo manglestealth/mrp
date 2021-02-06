@@ -1,5 +1,6 @@
 package models
 
+//响应
 type GeneralRes struct {
 	Code int64 `json:"code"`
 	Msg string `json:"msg"`
@@ -10,6 +11,8 @@ const(
 	WorkConn
 )
 
+
+//客户端请求
 type ClientCtlReq struct {
 	Type int64 `json:"type"`
 	ProxyName string `json:"proxy_name"`

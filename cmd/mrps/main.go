@@ -14,14 +14,13 @@ var ProxyServers map[string]*models.ProxyServer = make(map[string]*models.ProxyS
 func main() {
 	//frpConf := config.LoadConf("frps")
 	commonConfig := &config.Config{}
-	commonConfig, ProxyServers = config.LoadConf("frps")
+	commonConfig, ProxyServers = config.LoadServerConf("frps")
 	//fmt.Println(frpConf)
 	l, err := conn.Listen(commonConfig.BindAddr, commonConfig.BindPort)
 	if err != nil {
 		log.Fatalf("create listener error %v", err)
 	}
-	c := l.GetConn()
-	controlWorker(c)
+	ProcessControlConn(l)
 }
 
 func ProcessControlConn(l *conn.Listener) {
