@@ -2,20 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/manglestealth/mrp/pkg/config"
 	"github.com/manglestealth/mrp/pkg/conn"
 	"github.com/manglestealth/mrp/pkg/models"
-	"log"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 var ProxyServers map[string]*models.ProxyServer = make(map[string]*models.ProxyServer)
 
 func main() {
-	//frpConf := config.LoadConf("frps")
 	commonConfig := &config.Config{}
 	commonConfig, ProxyServers = config.LoadServerConf("frps")
-	//fmt.Println(frpConf)
 	l, err := conn.Listen(commonConfig.BindAddr, commonConfig.BindPort)
 	if err != nil {
 		log.Fatalf("create listener error %v", err)
@@ -26,7 +24,7 @@ func main() {
 func ProcessControlConn(l *conn.Listener) {
 	for {
 		c := l.GetConn()
-		log.Printf("Get one new conn %v\n", c)
+		log.Infof("Get one new conn %v\n", c)
 		go controlWorker(c)
 	}
 }
@@ -37,7 +35,7 @@ func controlWorker(c *conn.Conn) {
 	if err != nil {
 		log.Fatalf("Read error %v\n", err)
 	}
-	log.Printf("get %s", res)
+	log.Printf("server get conn %s", res)
 
 	clientCtlReq := &models.ClientCtlReq{}
 	clientCtlRes := &models.ClientCtlRes{}
@@ -91,13 +89,13 @@ func checkProxy(req *models.ClientCtlReq, c *conn.Conn) (succ bool, msg string, 
 
 	server, ok := ProxyServers[req.ProxyName]
 	if !ok {
-		msg = fmt.Sprintf("ProxyName [%s] is not exist", req.ProxyName)
+		msg = fmt.Sprintf("ProxyName [%s] is not exist\n", req.ProxyName)
 		log.Fatal(msg)
 		return
 	}
 
 	if req.Passwd != server.Passwd {
-		msg = fmt.Sprintf("ProxyName [%s], password is not correct", req.ProxyName)
+		msg = fmt.Sprintf("ProxyName [%s], password is not correct\n", req.ProxyName)
 		log.Fatal(msg)
 		return
 	}

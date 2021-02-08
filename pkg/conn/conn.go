@@ -3,8 +3,8 @@ package conn
 import (
 	"bufio"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"net"
 	"sync"
 )
@@ -66,6 +66,9 @@ func(c *Conn)Close(){
 	c.TcpConn.Close()
 }
 
+/**
+    服务器监听端口链接
+ */
 func Listen(bindAddr string, bindPort int64)(l *Listener, err error){
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	listener, err := net.ListenTCP("tcp", tcpAddr)
@@ -73,6 +76,7 @@ func Listen(bindAddr string, bindPort int64)(l *Listener, err error){
 	if err != nil{
 		return nil, err
 	}
+	log.Infof("proxy listen at [%s:%d]\n", bindAddr, bindPort)
 
 	l = &Listener{
 		Addr: listener.Addr(),
@@ -83,7 +87,7 @@ func Listen(bindAddr string, bindPort int64)(l *Listener, err error){
 		for{
 			conn, err := listener.AcceptTCP()
 			if err != nil{
-				log.Printf("Accept new tcp connection error, %v", err)
+				log.Warnf("Accept new tcp connection error, %v", err)
 				continue
 			}
 

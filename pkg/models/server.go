@@ -3,7 +3,7 @@ package models
 import (
 	"container/list"
 	"github.com/manglestealth/mrp/pkg/conn"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -31,6 +31,8 @@ func(p *ProxyServer)Init(){
 	p.CtlMsgChan = make(chan int64)
 	p.CliConnChan = make(chan *conn.Conn)
 	p.UserConnList = list.New()
+
+	log.Infof("proxy server init [%v] \n", p)
 }
 
 func(p *ProxyServer)Lock(){
@@ -71,7 +73,7 @@ func(p *ProxyServer)Start() (err error){
 		}
 	}()
 
-	//配对
+	//配对访问服务器的端口号和对应的转发连接
 	go func(){
 		for {
 			cliConn := <-p.CliConnChan
