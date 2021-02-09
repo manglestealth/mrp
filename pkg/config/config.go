@@ -44,6 +44,8 @@ func LoadServerConf(path string) (*Config, map[string]*models.ProxyServer) {
 				proxyServer := &models.ProxyServer{}
 				proxyServer.Name = name
 				proxyServer.Passwd = sectionMap["passwd"].(string)
+				proxyServer.BindAddr = sectionMap["bind_addr"].(string)
+				proxyServer.ListenPort = sectionMap["listen_port"].(int64)
 				proxyServer.Init()
 				ProxyServers[name] = proxyServer
 			}
