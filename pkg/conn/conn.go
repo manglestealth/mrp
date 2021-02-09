@@ -36,6 +36,7 @@ func(c *Conn) ConnServer(host string, port int64)(err error){
 		return err
 	}
 	conn, err := net.DialTCP("tcp", nil, serverAddr)
+	log.Infof("client dial server [%s:%d] success\n", host, port)
 	if err != nil{
 		return err
 	}

@@ -35,13 +35,13 @@ func controlWorker(c *conn.Conn) {
 	if err != nil {
 		log.Fatalf("Read error %v\n", err)
 	}
-	log.Printf("server get conn %s", res)
+	log.Infof("server get conn msg %s", res)
 
 	clientCtlReq := &models.ClientCtlReq{}
 	clientCtlRes := &models.ClientCtlRes{}
 
 	if err := json.Unmarshal([]byte(res), &clientCtlReq); err != nil {
-		log.Fatalf("Parse err : %v : %s", err, res)
+		log.Fatalf("Parse conn msg err : %v : %s", err, res)
 	}
 
 	succ, msg, needRes := checkProxy(clientCtlReq, c)

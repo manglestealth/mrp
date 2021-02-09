@@ -2,12 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/manglestealth/mrp/pkg/config"
 	"github.com/manglestealth/mrp/pkg/conn"
 	"github.com/manglestealth/mrp/pkg/models"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"sync"
 )
 
@@ -54,7 +53,7 @@ func controlProcess(client *models.ProxyClient, wait *sync.WaitGroup){
 		log.Fatalf("ProxyName [%s], read from server error, %v", client.Name, err)
 	}
 
-	fmt.Printf("ProxyName [%s], read [%s]", client.Name, res)
+	log.Infof("ProxyName [%s], read [%s]", client.Name, res)
 
 	clientCtlRes := &models.ClientCtlRes{}
 	if err = json.Unmarshal([]byte(res), &clientCtlRes); err != nil {
@@ -71,10 +70,10 @@ func controlProcess(client *models.ProxyClient, wait *sync.WaitGroup){
 		// ignore response content now
 		_, err := c.ReadLine()
 		if err == io.EOF {
-			fmt.Printf("ProxyName [%s], server close this control conn", client.Name)
+			log.Infof("ProxyName [%s], server close this control conn", client.Name)
 			break
 		} else if err != nil {
-			log.Printf("ProxyName [%s], read from server error, %v", client.Name, err)
+			log.Warnf("ProxyName [%s], read from server error, %v", client.Name, err)
 			continue
 		}
 		client.StartTunnel(commonConfig.BindAddr, commonConfig.BindPort)
