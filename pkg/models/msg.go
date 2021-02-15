@@ -19,10 +19,12 @@ type ClientCtlReq struct {
 	Passwd string `json:"passwd"`
 }
 
+//客户端响应
 type ClientCtlRes struct {
 	GeneralRes
 }
 
+//服务器请求
 type ServerCtlReq struct {
 	Type int64 `json:"type"`
 }
